@@ -200,8 +200,6 @@ class JSINFO:
                     logger.info('[+]api count ==> {}'.format(len(self.apis)))
                     logger.info('[+]leakinfos count ==> {}'.format(len(self.leak_infos)))
                     logger.info('-' * 20)
-                    break
-                break
             except KeyboardInterrupt:
                 logger.info('[+]Break From Queue.')
                 break
