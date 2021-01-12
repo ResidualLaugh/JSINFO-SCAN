@@ -66,11 +66,11 @@ class JSINFO:
         else:
             self.black_keywords = []
 
-        self.black_extend_list = ['png', 'jpg', 'gif', 'jpeg', 'ico', 'svg', 'bmp', 'mp3', 'mp4', 'avi', 'mpeg', 'mpg',
+        self.black_extend_list = ('png', 'jpg', 'gif', 'jpeg', 'ico', 'svg', 'bmp', 'mp3', 'mp4', 'avi', 'mpeg', 'mpg',
                                   'mov', 'zip', 'rar', 'tar', 'gz', 'mpeg', 'mkv', 'rmvb', 'iso', 'css', 'txt', 'ppt',
                                   'dmg', 'app', 'exe', 'pem', 'doc', 'docx', 'pkg', 'pdf', 'xml', 'eml''ini', 'so',
                                   'vbs', 'json', 'webp', 'woff', 'ttf', 'otf', 'log', 'image', 'map', 'woff2', 'mem',
-                                  'wasm', 'pexe', 'nmf']
+                                  'wasm', 'pexe', 'nmf')
         self.black_filename_list = ['jquery', 'bootstrap', 'react', 'vue', 'google-analytics']
         self.extract_urls = []
         self._value_lock = threading.Lock()
@@ -145,7 +145,13 @@ class JSINFO:
                                    'json_web_token': r'ey[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$',
                                    'slack_token': r"\"api_token\":\"(xox[a-zA-Z]-[a-zA-Z0-9-]+)\"",
                                    'SSH_privKey': r"([-]+BEGIN [^\s]+ PRIVATE KEY[-]+[\s]*[^-]*[-]+END [^\s]+ PRIVATE KEY[-]+)",
-                                   'possible_Creds': r"(?i)("r"password\s*[`=:\"]+\s*[^\s]+|"r"password is\s*[`=:\"]*\s*[^\s]+|"r"pwd\s*[`=:\"]*\s*[^\s]+|"r"passwd\s*[`=:\"]+\s*[^\s]+)", }
+                                   'possible_Creds': r"(?i)("r"password\s*[`=:\"]+\s*[^\s]+|"r"password is\s*[`=:\"]*\s*[^\s]+|"r"pwd\s*[`=:\"]*\s*[^\s]+|"r"passwd\s*[`=:\"]+\s*[^\s]+)",
+                                   'ip' : r"['\"]\d+\.\d+\.\d+\.\d+['\"]",
+                                   'ip_port': r"['\"]\d+\.\d+\.\d+\.\d+\:\d+['\"]",
+                                   'domain': r"['\"][a-zA-Z0-9\-\.]*?\.(?:xin|com|cn|net|com.cn|vip|top|cc|shop|club|wang|xyz|luxe|site|news|pub|fun|online|win|red|loan|ren|mom|net.cn|org|link|biz|bid|help|tech|date|mobi|so|me|tv|co|vc|pw|video|party|pics|website|store|ltd|ink|trade|live|wiki|space|gift|lol|work|band|info|click|photo|market|tel|social|press|game|kim|org.cn|games|pro|men|love|studio|rocks|asia|group|science|design|software|engineer|lawyer|fit|beer|我爱你|中国|公司|网络|在线|网址|网店|集团|中文网)['\"]",
+                                   'path': r"(['\"]\/[^/][^>< \)\(\{\}]*?['\"])",
+                                   'url': r"['\"](?:(?:[a-zA-Z0-9]+:)?\/\/)?[a-zA-Z0-9\-\.]*?\.(?:xin|com|cn|net|com.cn|vip|top|cc|shop|club|wang|xyz|luxe|site|news|pub|fun|online|win|red|loan|ren|mom|net.cn|org|link|biz|bid|help|tech|date|mobi|so|me|tv|co|vc|pw|video|party|pics|website|store|ltd|ink|trade|live|wiki|space|gift|lol|work|band|info|click|photo|market|tel|social|press|game|kim|org.cn|games|pro|men|love|studio|rocks|asia|group|science|design|software|engineer|lawyer|fit|beer|我爱你|中国|公司|网络|在线|网址|网店|集团|中文网)(?:\/.*?)?['\"]",
+                                    }
 
         """输出传入的Target以及Keywords"""
         if not os.path.isfile(target):
@@ -194,6 +200,8 @@ class JSINFO:
                     logger.info('[+]api count ==> {}'.format(len(self.apis)))
                     logger.info('[+]leakinfos count ==> {}'.format(len(self.leak_infos)))
                     logger.info('-' * 20)
+                    break
+                break
             except KeyboardInterrupt:
                 logger.info('[+]Break From Queue.')
                 break
@@ -435,7 +443,11 @@ class JSINFO:
             self._value_lock.acquire()
             matchs = re.findall(pattern, text, re.IGNORECASE)
             for match in matchs:
-                match_tuple = (key, match, url)
+                match = match.replace('\'','').replace('"','')
+                if match.endswith(self.black_extend_list):
+                    match_tuple = ('static_url', match, url)
+                else:
+                    match_tuple = (key, match, url)
                 if match not in self.leak_infos_match:
                     self.leak_infos.append(match_tuple)
                     self.leak_infos_match.append(match)
